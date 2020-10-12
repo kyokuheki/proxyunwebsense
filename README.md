@@ -13,11 +13,11 @@ pip3 install requests lxml
 ## Run
 
 ```shell
-python3 proxyunwebsense.py --http_proxy http://127.0.0.1:3128 example.com
+python3 proxyunwebsense.py --http_proxy http://127.0.0.1:3128 https://example.com
 # or
 export HTTP_PROXY=http://127.0.0.1:3128
 export HTTPS_PROXY=http://127.0.0.1:3128
-python3 proxyunwebsense.py example.com
+python3 proxyunwebsense.py https://example.com
 ```
 
 ## Usage

@@ -116,7 +116,7 @@ def is_blocked(url: urllib.parse.ParseResult):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='proxyunwebsence.py: Unblock proxy websence.')
+        description='proxyunwebsence.py: The proxyunwebsense is an automated tool on the CLI that clicks the unblock URL of the websense proxy.')
     parser.add_argument(
         '--http_proxy',
         action="store",

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import logging
 import urllib.parse
@@ -38,8 +41,8 @@ DEFAULT_HEADERS = {
 #        raise
 #    return _r
 
-def unwebsense(request_url):
-    url = urllib.parse.urlparse(request_url)
+def unwebsense(url: urllib.parse.ParseResult):
+    request_url = url.geturl()
     if url.scheme == 'https':
         request_url = urllib.parse.urlunparse(('http', *url[1:]))
 
@@ -76,8 +79,8 @@ def unwebsense(request_url):
 
     return r
 
-def is_blocked(request_url):
-    url = urllib.parse.urlparse(request_url)
+def is_blocked(url: urllib.parse.ParseResult):
+    request_url = url.geturl()
     try:
         r = requests.get(request_url, proxies=proxies, headers=DEFAULT_HEADERS)
     except requests.exceptions.ProxyError as e:
@@ -104,32 +107,34 @@ def is_blocked(request_url):
 def main():
     parser = argparse.ArgumentParser(
         description='proxyunwebsence.py: Unblock proxy websence.')
-    parser.add_argument('--http_proxy', action="store", type=urllib.parse.urlparse, 
+    parser.add_argument('--http_proxy', action="store", type=urllib.parse.urlparse,
                         default=os.getenv("HTTP_PROXY", "http://127.0.0.1:3128"), help="HTTP PROXY")
-    parser.add_argument('--https_proxy', action="store", type=urllib.parse.urlparse, 
+    parser.add_argument('--https_proxy', action="store", type=urllib.parse.urlparse,
                         default=os.getenv("HTTPS_PROXY", "http://127.0.0.1:3128"), help="HTTPS PROXY")
     parser.add_argument('-c', '--count', action="store",
                         type=int, default=5, help="set the number of unwebsence.")
-    parser.add_argument('url', nargs='*', type=str, default="https://example.com")
+    parser.add_argument('url', nargs='*', type=urllib.parse.urlparse, default=[urllib.parse.urlparse("https://example.com")])
 
     args = parser.parse_args()
     logger.info("args: {}".format(args))
 
     global proxies
-    proxies["http"] = args.http_proxy.netloc
-    proxies["https"] = args.https_proxy.netloc
+    proxies["http"] = args.http_proxy.geturl()
+    proxies["https"] = args.https_proxy.geturl()
 
-    logger.info("url: {}".format(args.url))
+    logger.info("url: {}".format([u.geturl() for u in args.url]))
     logger.info("proxies: {}".format(proxies))
-    if is_blocked(args.url) or args.count > 1:
-        for i in range(args.count):
-            logger.info("count: {}".format(i))
-            r = unwebsense(args.url)
-            print("unwebsense: {}".format(args.url))
-        exit(is_blocked(args.url))
-    else:
-        print("websense not found")
-        exit()
+
+    for url in args.url:
+        if is_blocked(url) or args.count > 1:
+            for i in range(args.count):
+                logger.info("count: {}".format(i))
+                r = unwebsense(url)
+                print("unwebsense: {}".format(url.geturl()))
+            exit(is_blocked(url))
+        else:
+            print("websense not found")
+            exit()
 
 if __name__ == "__main__":
     main()
